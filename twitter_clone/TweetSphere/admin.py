@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
-from .models import Profile
-
+from .models import Profile,Tweet
 # Unregister the Group model from the admin site
 admin.site.unregister(Group)
 
@@ -29,6 +28,11 @@ admin.site.register(User, UserAdmin)
 # Register Profile
 
 #admin.site.register(Profile)
+
+# Register tweets
+
+admin.site.register(Tweet)
+
 
 
 
