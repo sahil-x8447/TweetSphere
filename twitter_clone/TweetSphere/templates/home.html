@@ -2,71 +2,99 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .comments-section {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #ddd;
+    }
+    .comments-section small {
+        font-size: 12px;
+        color: #999;
+    }
+    .comment {
+        padding: 5px 0;
+    }
+    .comment small {
+        font-size: 11px;
+        color: #555;
+    }
+    .comment-form {
+        margin-top: 10px;
+    }
+    .comment-form input[type="text"] {
+        width: calc(100% - 100px);
+        display: inline-block;
+    }
+    .comment-form button {
+        display: inline-block;
+        width: 80px;
+        margin-left: 10px;
+    }
+</style>
+
 <div class="container text-center">
     <div class="row">
         <div class="col-8">
-    <h1>Tweets!!</h1>
-    <br/>
+            <h1>Tweets!!</h1>
+            <br/>
 
-
-    {% if tweets %}
-        {% for tweet in tweets %}
-        <div class="alert alert-info" role="alert">
-            <div class="container">
-                <div class="row">
-                    <div class="col-1">
-                        {% if tweet.user.profile.profile_image %}
-                <img src="{{ tweet.user.profile.profile_image.url }}" class="rounded-circle" width="50" height="50" alt={{"profile.user.username"}}>
-
-                {% else %}
-
-                <img src="{% static 'images/default_profile_pic.jpg' %}" class="rounded-circle" width="50" height="50" alt={{"profile.user.username"}}>
-
-
-
-                {% endif %}
+            {% if tweets %}
+                {% for tweet in tweets %}
+                <div class="alert alert-info" role="alert">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-1">
+                                {% if tweet.user.profile.profile_image %}
+                                    <img src="{{ tweet.user.profile.profile_image.url }}" class="rounded-circle" width="50" height="50" alt="{{ tweet.user.username }}">
+                                {% else %}
+                                    <img src="{% static 'images/default_profile_pic.jpg' %}" class="rounded-circle" width="50" height="50" alt="{{ tweet.user.username }}">
+                                {% endif %}
+                            </div>
+                            <div class="col-11">
+                                {{ tweet.body }}<br/>
+                                <small class="text-muted">
+                                    {{ tweet.created_at }} By @{{ tweet.user.username }} - {{ tweet.number_of_likes }}
+                                    {% if user in tweet.likes.all %}
+                                        <a href="{% url 'tweet_like' tweet.id %}"><i class="fa-solid fa-heart" style="color:red"></i></a>
+                                    {% else %}
+                                        <a href="{% url 'tweet_like' tweet.id %}"><i class="fa fa-heart-o" style="color:red"></i></a>
+                                    {% endif %}
+                                    <a href="{% url 'tweet_show' tweet.id %}"><i class="fa-solid fa-share" style="color:gray"></i></a>
+                                </small>
+                                <div class="comments-section">
+                                    <small class="text-muted">Comments:</small>
+                                    {% for comment in tweet.comments.all %}
+                                        <div class="comment">{{ comment.body }} - <small>{{ comment.user.username }}</small></div>
+                                    {% endfor %}
+                                    <form method="POST" class="comment-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="form_type" value="comment">
+                                        <input type="text" name="body" placeholder="Add a comment" class="form-control">
+                                        <input type="hidden" name="tweet_id" value="{{ tweet.id }}">
+                                        <button type="submit" class="btn btn-sm btn-secondary">Add</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-            <div class="col-11">
-            {{ tweet.body}}<br/>
-            <small class="text-muted">
-            {{ tweet.created_at }} By @{{ tweet.user.username}}
-            - {{ tweet.number_of_likes}} 
-            {% if user in tweet.likes.all %}
-
-            <a href="{% url 'tweet_like' tweet.id %}">
-                <i class="fa-solid fa-heart" style="color:red"></i></a>
+                </div>
+                {% endfor %}
             {% else %}
-            <a href="{% url 'tweet_like' tweet.id %}">
-                <i class="fa fa-heart-o" style="color:red"></i></a>
+                <p>No tweets available.</p>
             {% endif %}
-            <a href="{% url 'tweet_show' tweet.id %}">
-                <i class="fa-solid fa-share" style="color:gray"></i>
-                          </a>
-
-            </small>
-          </div><br/>
-	
+        </div>
+        <div class="col-4">
+            {% if tweet_form %}  
+                <form method="POST">  
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="tweet">
+                    {{ tweet_form.as_p }}
+                    <button type="submit" class="btn btn-secondary">Post</button>
+                </form>
+            {% endif %}
+        </div>
     </div>
 </div>
-</div>
-        
-        {% endfor %}
-    {% else %}
-        <p>No tweets available.</p>
-    {% endif %}
-    </div>
 
-    <div class="col-4"><br/><br/><br/>
-        {% if form %}  
-        <form method=POST>  
-            {% csrf_token %}
-            {{form.as_p}}
-
-
-
-
-            <button type="submit" class="btn btn-secondary">Post</button>
-          </form>
-          {% endif %}
-    </div>
 {% endblock %}
